@@ -1,0 +1,32 @@
+{
+  "name": "Something",
+  "version": "1.0.0",
+  "description": "Digital storytelling piece",
+  "private": "true",
+  "scripts": {
+    "clean": "rm dist/* && rm dev/*",
+    "env": "env",
+    "start": "webpack serve --open --config webpack.dev.config.js",
+    "prebuild-prod": "cp -r src/media/* dist/media",
+    "build-prod": "webpack --config webpack.prod.config.js && babel dist -d dist",
+    "prebuild-dev": "cp -r src/media/* dev/media",
+    "build-dev": "webpack --config webpack.dev.config.js --watch"
+  },
+  "author": "Henry James",
+  "license": "ISC",
+  "dependencies": {
+    "pixi.js": "^6.4.2",
+    "tone": "^14.7.77"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.17.10",
+    "@babel/core": "^7.17.10",
+    "@babel/preset-env": "^7.17.10",
+    "css-loader": "^6.7.1",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
+  }
+}
