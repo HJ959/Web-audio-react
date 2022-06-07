@@ -1,9 +1,5 @@
-# Some Thing
+# Web audio react
+Lil prototype of a visualiser created using Pixi.js and Tone.js
 
-## Digital story coming soon :)
-
-### Thank you to the following libraries and clever coding peoples
-#### YUKA
-#### Three.js
-#### Tone.js
-# Web-audio-react
+## Track 
+Lisene - Common Ground - 01 Class Of '92
