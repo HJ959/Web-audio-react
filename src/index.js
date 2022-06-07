@@ -20,7 +20,7 @@ document.addEventListener('pointerdown', async () => {
 
 function initSound() {
 
-    const lowPass = new Tone.Filter(500, "lowpass").toDestination();
+    const lowPass = new Tone.Filter(500, "lowpass");
     lowMeter = new Tone.Meter();
     mic = new Tone.UserMedia();
     // mic.open();
@@ -29,14 +29,14 @@ function initSound() {
     lowPass.connect(lowMeter);
     // the current level of the mic
 
-    const highPass = new Tone.Filter(5000, "highpass").toDestination();
+    const highPass = new Tone.Filter(5000, "highpass");
     highMeter = new Tone.Meter();
     // connect mic to the meter
     // mic.connect(highPass);
     highPass.connect(highMeter);
     // the current level of the mic
 
-    const player = new Tone.Player("/media/lisene.mp3").connect(highPass).connect(lowPass);
+    const player = new Tone.Player("/media/lisene.mp3").connect(highPass).connect(lowPass).toDestination();
     // play as soon as the buffer is loaded
     player.autostart = true;
 
