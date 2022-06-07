@@ -20,7 +20,7 @@ document.addEventListener('pointerdown', async () => {
 
 function initSound() {
 
-    const lowPass = new Tone.Filter(500, "lowpass");
+    const lowPass = new Tone.Filter(240, "lowpass");
     lowMeter = new Tone.Meter();
     mic = new Tone.UserMedia();
     // mic.open();
