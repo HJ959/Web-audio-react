@@ -1,6 +1,10 @@
 import * as Tone from 'tone'
 import * as PIXI from 'pixi.js'
 import './main.css'
+import './usefulFunctions'
+import {
+    getRandomInt
+} from './usefulFunctions';
 
 // variables
 let toneStarted = false;
@@ -36,7 +40,7 @@ function initSound() {
     highPass.connect(highMeter);
     // the current level of the mic
 
-    const player = new Tone.Player("/media/lisene.mp3").connect(highPass).connect(lowPass).toDestination();
+    const player = new Tone.Player("/media/WarezHouse.mp3").connect(highPass).connect(lowPass).toDestination();
     // play as soon as the buffer is loaded
     player.autostart = true;
 
@@ -62,6 +66,7 @@ function initGraphics() {
     thing.filters = [blurFilter1];
 
     const filter = new PIXI.filters.ColorMatrixFilter();
+    filter.autoFit = false;
 
     app.stage.filters = [filter];
 
@@ -73,33 +78,30 @@ function initGraphics() {
 
     app.ticker.add(() => {
         if (toneStarted === true) {
-            count += 0.2;
+            thing.x = (window.innerWidth * 0.5);
+            thing.y = (window.innerHeight * 0.5);
+            count += 0.1;
 
-            const blurAmount = Math.cos(count);
+            blurFilter1.blur = 50 - Math.abs(lowMeter.getValue());
 
-            blurFilter1.blur = Math.abs(lowMeter.getValue()) * (blurAmount);
+            thing.lineStyle(Math.random() * 30, Math.random() * 0xFFFFFF, 1);
+            thing.moveTo(Math.random() * 800, Math.random() * 600);
+            thing.bezierCurveTo(
+                Math.random() * 200, Math.random() * 600,
+                Math.random() * 200, Math.random() * 600,
+                Math.random() * 200, Math.random() * 800,
+            );
 
-            thing.clear();
-            thing.lineStyle(Math.abs(lowMeter.getValue()) * 10, 0xff0000, 1);
-            thing.beginFill(0xffFF00, Math.abs(lowMeter.getValue()));
 
-            thing.moveTo(-120 + Math.sin(count) * 20, -100 + Math.cos(count) * 20);
-            thing.lineTo(120 + Math.cos(count) * 20, -100 + Math.sin(count) * 20);
-            thing.lineTo(120 + Math.sin(count) * 20, 100 + Math.cos(count) * 20);
-            thing.lineTo(-120 + Math.cos(count) * 20, 100 + Math.sin(count) * 20);
-            thing.lineTo(-120 + Math.sin(count) * 20, -100 + Math.cos(count) * 20);
-            
-            thing.closePath();
-
-            thing.rotation = count * (lowMeter.getValue() * 0.001);
 
             const {
                 matrix
             } = filter;
 
             if (highMeter.getValue() > -24) {
-                thing.x = (window.innerWidth * 0.5) + (Math.abs(highMeter.getValue())*0.1);
-                thing.y = (window.innerHeight * 0.5) + (Math.abs(highMeter.getValue())*0.1);
+                thing.x =  (Math.abs(highMeter.getValue()) * 0.001);
+                thing.y =  (Math.abs(highMeter.getValue()) * 0.001);
+                thing.rotation = count * (lowMeter.getValue() * 0.0006);
                 countColour += 0.1;
                 matrix[1] = Math.sin(countColour) * 3;
                 matrix[2] = Math.cos(countColour);
@@ -107,6 +109,7 @@ function initGraphics() {
                 matrix[4] = Math.sin(countColour / 3) * 2;
                 matrix[5] = Math.sin(countColour / 2);
                 matrix[6] = Math.sin(countColour / 4);
+                thing.clear();
             }
         }
     });
