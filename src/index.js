@@ -8,7 +8,7 @@ import {
 
 // variables
 let toneStarted = false;
-let lowMeter, highMeter, mic;
+let lowMeter, midMeter, highMeter;
 
 initGraphics();
 
@@ -23,24 +23,19 @@ document.addEventListener('pointerdown', async () => {
 })
 
 function initSound() {
-
     const lowPass = new Tone.Filter(240, "lowpass");
     lowMeter = new Tone.Meter();
-    mic = new Tone.UserMedia();
-    // mic.open();
-    // connect mic to the meter
-    // mic.connect(lowPass);
     lowPass.connect(lowMeter);
-    // the current level of the mic
 
-    const highPass = new Tone.Filter(5000, "highpass");
+    const midPass = new Tone.Filter(1000, "bandpass");
+    midMeter = new Tone.Meter();
+    midPass.connect(midMeter);
+
+    const highPass = new Tone.Filter(6000, "bandpass");
     highMeter = new Tone.Meter();
-    // connect mic to the meter
-    // mic.connect(highPass);
     highPass.connect(highMeter);
-    // the current level of the mic
 
-    const player = new Tone.Player("/media/WarezHouse.mp3").connect(highPass).connect(lowPass).toDestination();
+    const player = new Tone.Player("/media/LeploopLagoon.mp3").connect(highPass).connect(lowPass).connect(midPass).toDestination();
     // play as soon as the buffer is loaded
     player.autostart = true;
 
@@ -53,55 +48,54 @@ function initGraphics() {
     });
     document.body.appendChild(app.view);
 
-    app.stage.interactive = true;
-
     // let's create a moving shape
     const thing = new PIXI.Graphics();
+    const thingTwo = new PIXI.Graphics();
     app.stage.addChild(thing);
-
+    app.stage.addChild(thingTwo);
 
     let count = 0;
 
     const blurFilter1 = new PIXI.filters.BlurFilter();
+    const blurFilter2 = new PIXI.filters.BlurFilter();
     thing.filters = [blurFilter1];
+    thingTwo.filters = [blurFilter2];
+    blurFilter1.autoFit = false;
+    blurFilter2.autoFit = false;
 
     const filter = new PIXI.filters.ColorMatrixFilter();
     filter.autoFit = false;
 
     app.stage.filters = [filter];
 
+    thing.x = window.innerWidth * 0.5
+    thing.y = window.innerHeight * 0.5
 
-    // Just click on the stage to draw random lines
-    window.app = app;
+    thingTwo.x = window.innerWidth * 0.5
+    thingTwo.y = window.innerHeight * 0.5
+
+
+    thing.pivot.set(window.innerWidth * 0.5, window.innerHeight * 0.5);
+    thingTwo.pivot.set(window.innerWidth * 0.5, window.innerHeight * 0.5);
 
     let countColour = 0;
 
     app.ticker.add(() => {
         if (toneStarted === true) {
-            thing.x = (window.innerWidth * 0.5);
-            thing.y = (window.innerHeight * 0.5);
+
             count += 0.1;
 
             blurFilter1.blur = 50 - Math.abs(lowMeter.getValue());
+            blurFilter2.blur = 50 - Math.abs(highMeter.getValue());
 
-            thing.lineStyle(Math.random() * 30, Math.random() * 0xFFFFFF, 1);
-            thing.moveTo(Math.random() * 800, Math.random() * 600);
-            thing.bezierCurveTo(
-                Math.random() * 200, Math.random() * 600,
-                Math.random() * 200, Math.random() * 600,
-                Math.random() * 200, Math.random() * 800,
-            );
-
-
+            squiggles(thing, count);
+            // rectHoles(thingTwo);
 
             const {
                 matrix
             } = filter;
 
             if (highMeter.getValue() > -24) {
-                thing.x =  (Math.abs(highMeter.getValue()) * 0.001);
-                thing.y =  (Math.abs(highMeter.getValue()) * 0.001);
-                thing.rotation = count * (lowMeter.getValue() * 0.0006);
                 countColour += 0.1;
                 matrix[1] = Math.sin(countColour) * 3;
                 matrix[2] = Math.cos(countColour);
@@ -109,8 +103,38 @@ function initGraphics() {
                 matrix[4] = Math.sin(countColour / 3) * 2;
                 matrix[5] = Math.sin(countColour / 2);
                 matrix[6] = Math.sin(countColour / 4);
-                thing.clear();
             }
         }
     });
+}
+
+function squiggles(graphics, count) {
+    graphics.lineStyle(Math.abs(lowMeter.getValue()), Math.random() * 0xFFFFFF, 1);
+    graphics.moveTo(Math.random() * 800, Math.random() * 600);
+    graphics.bezierCurveTo(
+        Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
+        Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
+        Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
+    );
+    if (highMeter.getValue() > -24) {
+        graphics.rotation = count * (lowMeter.getValue() * 0.0006);
+        graphics.clear();
+    }
+}
+
+function rectHoles(graphics) {
+    // draw a shape
+    graphics.beginFill(0xFF3300);
+    graphics.lineStyle(Math.abs(lowMeter.getValue()), 0x00000, 1);
+    graphics.moveTo(window.innerWidth + midMeter.getValue(), window.innerHeight + lowMeter.getValue());
+    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5), getRandomInt(100, window.innerWidth*0.5));
+    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5), getRandomInt(100, window.innerWidth*0.5));
+    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5), getRandomInt(100, window.innerWidth*0.5));
+    graphics.closePath();
+    graphics.endFill();
+
+    if (midMeter.getValue() > -24) {
+        graphics.clear();
+        graphics.rotation = Math.sin(midMeter.getValue());
+    }
 }
