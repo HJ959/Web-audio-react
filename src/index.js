@@ -3,7 +3,8 @@ import * as PIXI from 'pixi.js'
 import './main.css'
 import './usefulFunctions'
 import {
-    getRandomInt
+    getRandomInt,
+    scale
 } from './usefulFunctions';
 
 // variables
@@ -31,11 +32,12 @@ function initSound() {
     midMeter = new Tone.Meter();
     midPass.connect(midMeter);
 
-    const highPass = new Tone.Filter(6000, "bandpass");
+    const highPass = new Tone.Filter(6000, "highpass");
     highMeter = new Tone.Meter();
     highPass.connect(highMeter);
 
-    const player = new Tone.Player("/media/LeploopLagoon.mp3").connect(highPass).connect(lowPass).connect(midPass).toDestination();
+    const tracks = ['SpectralPattern.mp3', 'AtLeastWeHavMusic.mp3', 'LeploopLagoon.mp3', 'WarezHouse.mp3']
+    const player = new Tone.Player(`/media/${tracks[getRandomInt(0,tracks.length)]}`).connect(highPass).connect(lowPass).connect(midPass).toDestination();
     // play as soon as the buffer is loaded
     player.autostart = true;
 
@@ -109,29 +111,34 @@ function initGraphics() {
 }
 
 function squiggles(graphics, count) {
-    graphics.lineStyle(Math.abs(lowMeter.getValue()), Math.random() * 0xFFFFFF, 1);
+    graphics.lineStyle(Math.abs(lowMeter.getValue()), Math.random() * 0xFFFFFF, scale(lowMeter.getValue(), 0, -60, 1, 10)*0.1);
     graphics.moveTo(Math.random() * 800, Math.random() * 600);
     graphics.bezierCurveTo(
         Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
         Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
         Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
     );
-    if (highMeter.getValue() > -24) {
+    graphics.beginHole();
+    graphics.bezierCurveTo(
+        Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
+        Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
+        Math.random() * Math.abs(lowMeter.getValue()), Math.random() * window.innerWidth,
+    );
+    graphics.endHole();
+    if (midMeter.getValue() > -24) {
         graphics.rotation = count * (lowMeter.getValue() * 0.0006);
         graphics.clear();
     }
 }
 
 function rectHoles(graphics) {
-    // draw a shape
-    graphics.beginFill(0xFF3300);
-    graphics.lineStyle(Math.abs(lowMeter.getValue()), 0x00000, 1);
+    graphics.lineStyle(Math.abs(lowMeter.getValue()), 0x00000, getRandomInt(0,10)*0.1);
     graphics.moveTo(window.innerWidth + midMeter.getValue(), window.innerHeight + lowMeter.getValue());
-    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5), getRandomInt(100, window.innerWidth*0.5));
-    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5), getRandomInt(100, window.innerWidth*0.5));
-    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5), getRandomInt(100, window.innerWidth*0.5));
+    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5)*Math.PI, getRandomInt(100, window.innerWidth*0.5)*Math.PI);
+    graphics.beginHole();
+    graphics.lineTo(getRandomInt(100, window.innerWidth*0.5)*Math.PI, getRandomInt(100, window.innerWidth*0.5)*Math.PI);
+    graphics.endHole();
     graphics.closePath();
-    graphics.endFill();
 
     if (midMeter.getValue() > -24) {
         graphics.clear();
